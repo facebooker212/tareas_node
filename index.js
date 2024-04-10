@@ -94,11 +94,10 @@ app.put('/tasks/:id', async (req, res) => {
 // Elimina una tarea en base al ID
 app.delete('/tasks/:id', async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
-    if (!task) {
+    const deletedTask = await Task.deleteOne({ _id: req.params.id });
+    if (deletedTask.deletedCount === 0) {
       return res.status(404).json({ message: 'Task not found' });
     }
-    await task.remove();
     res.json({ message: 'Task deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
