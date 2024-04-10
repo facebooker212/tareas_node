@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express')
 const mongoose = require('mongoose');
 
@@ -5,14 +7,14 @@ const app = express()
 const port = 3000
 
 // Parametros de conexion a MongoDB
-const mongoUser = process.env.MONGO_USER;
-const mongoPassword = process.env.MONGO_PASSWORD;
-const mongoDatabase = process.env.MONGO_DATABASE;
-const mongoHost = process.env.MONGO_HOST;
-const mongoPort = process.env.MONGO_PORT;
+const mongoUser = encodeURIComponent(process.env.MONGO_USER);
+const mongoPassword = encodeURIComponent(process.env.MONGO_PASSWORD);
+
+// Creamos string de conexion
+const uri = `mongodb://${mongoUser}:${mongoPassword}@127.0.0.1:27017/tasks?authSource=admin`;
 
 // Prueba conexion local a MongoDB
-mongoose.connect(`mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoDatabase}`, {
+mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => {
