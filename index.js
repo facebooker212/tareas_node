@@ -1,30 +1,108 @@
 const express = require('express')
+const mongoose = require('mongoose');
+
 const app = express()
 const port = 3000
 
-app.get('/tasks', (req, res) => {
-  // Return tasks
-  res.send('This returns tasks')
+// Parametros de conexion a MongoDB
+const mongoUser = process.env.MONGO_USER;
+const mongoPassword = process.env.MONGO_PASSWORD;
+const mongoDatabase = process.env.MONGO_DATABASE;
+const mongoHost = process.env.MONGO_HOST;
+const mongoPort = process.env.MONGO_PORT;
+
+// Prueba conexion local a MongoDB
+mongoose.connect(`mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoDatabase}`, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log('Connected to MongoDB');
+}).catch((err) => {
+  console.error('Error connecting to MongoDB:', err);
+});
+
+// Esquema de los datos
+const taskSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  status: { type: String, default: "pendiente" },
+});
+
+const Task = mongoose.model('Task', taskSchema);
+
+// Middleware para el cuerpo de las solicitudes
+app.use(express.json());
+
+// tasks lista todas las tareas
+app.get('/tasks', async (req, res) => {
+  try {
+    const tasks = await Task.find();
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 })
 
-app.get('/tasks/:id', (req, res) => {
-  // Return rask by id
-  res.send('id: ' + req.params.id)
+// /tasks/:id devuelve una tarea especifica
+app.get('/tasks/:id', async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 })
 
-app.post('/tasks', (req, res) => {
-  // Create new task
+// /tasks (POST) Crea una nueva tarea
+app.post('/tasks', async (req, res) => {
+  const task = new Task({
+    title: req.body.title,
+    description: req.body.description,
+  });
+
+  try {
+    const newTask = await task.save();
+    res.status(201).json(newTask);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 })
 
-app.put('/tasks/:id', (req, res) => {
-  // Update task
-  res.send('id: ' + req.params.id)
+// Actualiza una tarea en base al ID
+app.put('/tasks/:id', async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    task.title = req.body.title;
+    task.description = req.body.description;
+    task.status = req.body.status;
+    const updatedTask = await task.save();
+    res.json(updatedTask);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 })
 
-app.delete('/tasks/:id', (req, res) => {
-  // Delete task by id
+// Elimina una tarea en base al ID
+app.delete('/tasks/:id', async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    await task.remove();
+    res.json({ message: 'Task deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 })
 
 app.listen(port, () => {
-  console.log('App running')
+  console.log('App running on port', port);
 })
