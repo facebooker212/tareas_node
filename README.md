@@ -22,4 +22,4 @@
 - Elimina una tarea en base a su ID
 
 ## Deployment
-- La API está desplegada en: [https://tareas-node.vicmr.com](https://tareas-node.vicmr.com)
+- La API está desplegada en: [https://tareas-node.vicmr.com](https://tareas-node.vicmr.com/tasks)
