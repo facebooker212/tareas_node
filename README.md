@@ -12,7 +12,7 @@
 - Agrega una nueva tarea
 - Parámetros en el body:
   - `title` (requerido)
-  - `description`
+  - `description` (requerido)
   - `status` (por defecto es "pendiente")
 
 ### PUT /tasks/:id
